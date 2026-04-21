@@ -7,3 +7,5 @@ __pycache__/
 .DS_Store
 node_modules/
 dashboard/.next/
+dashboard/.env.local
+dashboard/node_modules/
