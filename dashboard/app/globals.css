@@ -27,7 +27,7 @@ body {
   /* dot-grid background */
   background-image: radial-gradient(circle, #1C2333 1px, transparent 1px);
   background-size: 20px 20px;
-  overflow: hidden;
+  overflow: hidden; /* intentional — dashboard is viewport-locked */
 }
 
 /* ── Dashboard grid ── */
@@ -50,6 +50,7 @@ body {
   gap: 1px;
   background: var(--accent);
   min-height: 0;
+  height: 100%;
 }
 
 .area-equity   { grid-area: equity; }
