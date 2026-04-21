@@ -1,6 +1,18 @@
 import asyncio
+import json
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
+
+_CONTROL_FILE = Path("data/control.json")
+
+def _is_paused() -> bool:
+    try:
+        if _CONTROL_FILE.exists():
+            return json.loads(_CONTROL_FILE.read_text()).get("paused", False)
+    except Exception:
+        pass
+    return False
 from agent.database import init_db, write_decision, write_position, get_open_positions, get_daily_pnl, write_pnl_snapshot
 from agent.pipeline import fetch_ohlcv, fetch_ticker, cancel_after, KrakenCLIError
 from agent.signals import compute_signals
@@ -61,7 +73,7 @@ async def market_loop(shared: dict) -> None:
                     "stop_loss": None, "take_profit": None, "outcome": None,
                 }
 
-                if trade_signal.action != "hold":
+                if trade_signal.action != "hold" and not _is_paused():
                     order = build_order(pair, trade_signal.action, trade_signal.strategy,
                                         current_price, STARTING_EQUITY, state)
                     if order:
