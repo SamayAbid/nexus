@@ -107,3 +107,21 @@ def test_post_control_resume():
 def test_post_control_invalid_action():
     response = client.post("/api/control", json={"action": "destroy"})
     assert response.status_code == 422
+
+def test_app_has_cors_middleware():
+    from api.main import create_app
+    test_app = create_app()
+    middleware_types = [m.__class__.__name__ for m in test_app.user_middleware]
+    assert len(test_app.user_middleware) > 0
+
+def test_app_includes_routes():
+    from api.main import create_app
+    test_app = create_app()
+    paths = [route.path for route in test_app.routes]
+    assert "/api/status" in paths
+    assert "/api/pnl" in paths
+    assert "/api/positions" in paths
+    assert "/api/signals" in paths
+    assert "/api/trades" in paths
+    assert "/api/control" in paths
+    assert "/stream" in paths
