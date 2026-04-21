@@ -1,65 +1,75 @@
-import Image from "next/image";
+'use client'
+import { useEffect, useState } from 'react'
+import { NavBar } from '@/components/NavBar'
+import { EquityCurve } from '@/components/EquityCurve'
+import { SignalGauges } from '@/components/SignalGauges'
+import { Positions } from '@/components/Positions'
+import { RiskMonitor } from '@/components/RiskMonitor'
+import { TradeHistory } from '@/components/TradeHistory'
+import { BrainState } from '@/components/BrainState'
+import { usePolling } from '@/lib/usePolling'
+import { useWebSocket } from '@/lib/useWebSocket'
+import { getStatus, getPnL, getPositions, getSignals, getTrades } from '@/lib/api'
+import type { StatusData, PnLData, Position, SignalItem, Trade } from '@/lib/types'
 
-export default function Home() {
+const EMPTY_STATUS: StatusData = {
+  regime: null, strategy: null, pair: null, signal_score: null,
+  last_heartbeat: null, is_running: false, is_paused: false, uptime_seconds: 0,
+}
+const EMPTY_PNL: PnLData = { equity_curve: [], sharpe: 0, max_drawdown: 0, win_rate: 0, total_pnl: 0 }
+
+export default function Dashboard() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [tick, setTick] = useState(0)
+
+  // 30-second REST polling
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const status    = usePolling(getStatus, 30_000, EMPTY_STATUS)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const pnl       = usePolling(getPnL, 30_000, EMPTY_PNL)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const positions = usePolling(getPositions, 30_000, [] as Position[])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const signals   = usePolling(getSignals, 30_000, [] as SignalItem[])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const trades    = usePolling(() => getTrades(1), 30_000, { items: [] as Trade[], total: 0, page: 1, pages: 1 })
+
+  // WebSocket real-time overlay
+  const wsEvent = useWebSocket()
+  const [wsSignals, setWsSignals] = useState<SignalItem[]>([])
+  const [newTrade, setNewTrade] = useState<Trade | null>(null)
+
+  useEffect(() => {
+    if (!wsEvent) return
+    if (wsEvent.type === 'signal_changed') setWsSignals(wsEvent.data)
+    if (wsEvent.type === 'trade_executed') setNewTrade(wsEvent.data)
+  }, [wsEvent])
+
+  const liveSignals = wsSignals.length > 0 ? wsSignals : signals
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="dashboard">
+      <NavBar status={status} onControlChange={() => setTick(t => t + 1)} />
+      <div className="dashboard-grid">
+        <div className="area-equity">
+          <EquityCurve data={pnl} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="area-signals">
+          <SignalGauges signals={liveSignals} />
         </div>
-      </main>
+        <div className="area-positions">
+          <Positions positions={positions} />
+        </div>
+        <div className="area-risk">
+          <RiskMonitor status={status} pnl={pnl} />
+        </div>
+        <div className="area-trades">
+          <TradeHistory trades={trades.items} newTrade={newTrade} />
+        </div>
+        <div className="area-brain">
+          <BrainState status={status} signals={liveSignals} />
+        </div>
+      </div>
     </div>
-  );
+  )
 }
