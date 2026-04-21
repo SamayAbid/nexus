@@ -1,0 +1,9 @@
+data/nexus.db
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+node_modules/
+dashboard/.next/
