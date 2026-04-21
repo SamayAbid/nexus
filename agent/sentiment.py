@@ -1,10 +1,10 @@
 import os
 import numpy as np
 import httpx
-import anthropic
 import xml.etree.ElementTree as ET
+from openai import OpenAI
 
-anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "dummy"))
 
 COINDESK_RSS = "https://www.coindesk.com/arc/outboundfeeds/rss/"
 
@@ -27,19 +27,17 @@ def score_headlines(headlines: list[str]) -> float | None:
         return None
     prompt = "\n".join(f"- {h}" for h in headlines)
     try:
-        message = anthropic_client.messages.create(
-            model="claude-haiku-4-5-20251001",
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=10,
-            system=[{
-                "type": "text",
-                "text": SYSTEM_PROMPT,
-                "cache_control": {"type": "ephemeral"},
-            }],
-            messages=[{"role": "user", "content": f"Score these headlines:\n{prompt}"}],
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Score these headlines:\n{prompt}"},
+            ],
         )
-        raw = float(message.content[0].text.strip())
+        raw = float(response.choices[0].message.content.strip())
         return float(np.clip(raw, -1.0, 1.0))
-    except (ValueError, IndexError, anthropic.APIError):
+    except Exception:
         return None
 
 async def fetch_and_score_sentiment() -> float | None:
