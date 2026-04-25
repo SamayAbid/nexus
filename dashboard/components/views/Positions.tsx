@@ -90,10 +90,10 @@ function PositionsTable({
                 ) : (
                   <>
                     <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
-                      {p.stop_loss.toFixed(2)}
+                      {p.stop_loss?.toFixed(2) ?? '—'}
                     </td>
                     <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', color: 'var(--green)' }}>
-                      {p.take_profit.toFixed(2)}
+                      {p.take_profit?.toFixed(2) ?? '—'}
                     </td>
                   </>
                 )}

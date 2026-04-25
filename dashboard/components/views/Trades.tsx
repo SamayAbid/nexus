@@ -19,11 +19,20 @@ function pageBtnStyle(disabled: boolean): React.CSSProperties {
 export function Trades({ trades }: { trades: TradesData }) {
   const [page, setPage] = useState(1)
   const [data, setData] = useState<TradesData>(trades)
+  const [loading, setLoading] = useState(false)
 
   async function goToPage(p: number) {
-    const result = await getTrades(p)
-    setData(result)
-    setPage(p)
+    if (loading) return
+    setLoading(true)
+    try {
+      const result = await getTrades(p)
+      setData(result)
+      setPage(p)
+    } catch {
+      // page stays unchanged on error
+    } finally {
+      setLoading(false)
+    }
   }
 
   const cols = ['Time', 'Pair', 'Regime', 'Strategy', 'Action', 'Score', 'Entry', 'Outcome']
@@ -49,13 +58,13 @@ export function Trades({ trades }: { trades: TradesData }) {
           Trade History ({data.total} total)
         </span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => goToPage(page - 1)} disabled={page <= 1} style={pageBtnStyle(page <= 1)}>
+          <button onClick={() => goToPage(page - 1)} disabled={page <= 1 || loading} style={pageBtnStyle(page <= 1 || loading)}>
             ←
           </button>
           <span style={{ fontSize: 12, color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>
             {page} / {data.pages}
           </span>
-          <button onClick={() => goToPage(page + 1)} disabled={page >= data.pages} style={pageBtnStyle(page >= data.pages)}>
+          <button onClick={() => goToPage(page + 1)} disabled={page >= data.pages || loading} style={pageBtnStyle(page >= data.pages || loading)}>
             →
           </button>
         </div>
