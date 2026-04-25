@@ -3,6 +3,8 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 _CONTROL_FILE = Path("data/control.json")
 
