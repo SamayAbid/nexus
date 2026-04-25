@@ -70,7 +70,9 @@ function Gauge({ label, value, color }: { label: string; value: number | null; c
   )
 }
 
-const INDICATORS: { key: keyof SignalItem; label: string; color: string }[] = [
+type NumericSignalKey = 'rsi' | 'macd' | 'vwap' | 'bb' | 'composite'
+
+const INDICATORS: { key: NumericSignalKey; label: string; color: string }[] = [
   { key: 'rsi',       label: 'RSI',       color: '#F59E0B' },
   { key: 'macd',      label: 'MACD',      color: '#10B981' },
   { key: 'vwap',      label: 'VWAP',      color: '#60A5FA' },
@@ -114,7 +116,7 @@ function PairPanel({ pair, sig }: { pair: string; sig: SignalItem | undefined })
           <Gauge
             key={ind.key}
             label={ind.label}
-            value={(sig?.[ind.key] as number | null | undefined) ?? null}
+            value={sig?.[ind.key] ?? null}
             color={ind.color}
           />
         ))}
