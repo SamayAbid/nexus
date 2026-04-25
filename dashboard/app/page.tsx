@@ -36,8 +36,19 @@ export default function Dashboard() {
     localStorage.setItem('nexus-tab', t)
   }
 
+  async function handleControlChange() {
+    try {
+      const fresh = await getStatus()
+      setStatusOverride(fresh)
+    } catch {
+      // fall back to polled data on error
+    }
+  }
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const status    = usePolling(getStatus, 30_000, EMPTY_STATUS)
+  const polledStatus = usePolling(getStatus, 30_000, EMPTY_STATUS)
+  const [statusOverride, setStatusOverride] = useState<StatusData | null>(null)
+  const status = statusOverride ?? polledStatus
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pnl       = usePolling(getPnL, 30_000, EMPTY_PNL)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,8 +87,7 @@ export default function Dashboard() {
           {tab === 'positions' && <Positions positions={positions} />}
           {tab === 'trades'    && <Trades trades={trades} />}
           {tab === 'risk'      && <Risk status={status} pnl={pnl} />}
-          {/* TODO(Task 6): onChanged should trigger a status refetch after pause/resume */}
-          {tab === 'control'   && <Control status={status} onChanged={() => {}} />}
+          {tab === 'control'   && <Control status={status} onChanged={handleControlChange} />}
         </main>
       </div>
     </div>

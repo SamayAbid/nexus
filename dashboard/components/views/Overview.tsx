@@ -259,8 +259,8 @@ export function Overview({ status, pnl, positions, signals }: OverviewProps) {
                   </td>
                   <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)' }}>{p.entry_price.toFixed(2)}</td>
                   <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)' }}>{p.position_size.toFixed(4)}</td>
-                  <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>{p.stop_loss.toFixed(2)}</td>
-                  <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)', color: 'var(--green)' }}>{p.take_profit.toFixed(2)}</td>
+                  <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>{p.stop_loss?.toFixed(2) ?? '—'}</td>
+                  <td style={{ padding: '9px 16px', fontFamily: 'var(--font-mono)', color: 'var(--green)' }}>{p.take_profit?.toFixed(2) ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

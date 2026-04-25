@@ -113,7 +113,7 @@ export function Risk({ status, pnl }: { status: StatusData; pnl: PnLData }) {
         />
         <ProgressBar
           label="Max Drawdown"
-          value={drawdownPct}
+          value={-drawdownPct}
           max={10}
           color="var(--yellow)"
         />
