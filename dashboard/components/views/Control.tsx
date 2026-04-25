@@ -1,15 +1,17 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import type { CSSProperties } from 'react'
 import type { StatusData } from '@/lib/types'
 import { postControl } from '@/lib/api'
 
 interface LogEntry {
+  id: number
   time: string
   message: string
   ok: boolean
 }
 
-function ctrlBtnStyle(color: string, disabled: boolean): React.CSSProperties {
+function ctrlBtnStyle(color: string, disabled: boolean): CSSProperties {
   return {
     padding: '10px 20px',
     background: `${color}18`,
@@ -30,18 +32,23 @@ export function Control({ status, onChanged }: { status: StatusData; onChanged: 
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading]       = useState(false)
   const [log, setLog]               = useState<LogEntry[]>([])
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const logId = useRef(0)
 
   function addLog(message: string, ok: boolean) {
     const time = new Date().toLocaleTimeString('en-US', { hour12: false })
-    setLog(prev => [{ time, message, ok }, ...prev].slice(0, 20))
+    const id = ++logId.current
+    setLog(prev => [{ id, time, message, ok }, ...prev].slice(0, 20))
   }
 
   async function handlePause() {
     if (!confirming) {
+      confirmTimer.current = setTimeout(() => setConfirming(false), 3000)
       setConfirming(true)
-      setTimeout(() => setConfirming(false), 3000)
       return
     }
+    clearTimeout(confirmTimer.current ?? undefined)
+    confirmTimer.current = null
     setConfirming(false)
     setLoading(true)
     try {
@@ -197,8 +204,8 @@ export function Control({ status, onChanged }: { status: StatusData; onChanged: 
           </div>
         ) : (
           <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-            {log.map((entry, i) => (
-              <div key={i} style={{
+            {log.map(entry => (
+              <div key={entry.id} style={{
                 padding: '8px 16px',
                 borderBottom: '1px solid var(--border)',
                 display: 'flex',
