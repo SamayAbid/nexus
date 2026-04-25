@@ -52,7 +52,7 @@ async def market_loop(shared: dict) -> None:
                 shared["cb_date"] = state.circuit_breaker_reset_date
 
                 ticker = fetch_ticker(pair)
-                current_price = float(ticker.get("price", 0))
+                current_price = float(ticker.get("last", 0))
 
                 for pos in open_pos:
                     if pos["pair"] != pair:
