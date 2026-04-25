@@ -2,9 +2,13 @@ import os
 import numpy as np
 import httpx
 import xml.etree.ElementTree as ET
-from openai import OpenAI
+from openai import AzureOpenAI
 
-openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "dummy"))
+openai_client = AzureOpenAI(
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT", "https://abdul-mk75p7ba-eastus2.cognitiveservices.azure.com"),
+    api_key=os.environ.get("AZURE_OPENAI_API_KEY", "dummy"),
+    api_version="2025-01-01-preview",
+)
 
 COINDESK_RSS = "https://www.coindesk.com/arc/outboundfeeds/rss/"
 
@@ -28,7 +32,7 @@ def score_headlines(headlines: list[str]) -> float | None:
     prompt = "\n".join(f"- {h}" for h in headlines)
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-chat",
             max_tokens=10,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
