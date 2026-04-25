@@ -1,4 +1,5 @@
 'use client'
+import { useId } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import type { StatusData, PnLData, Position, SignalItem } from '@/lib/types'
 
@@ -40,6 +41,7 @@ interface OverviewProps {
 }
 
 export function Overview({ status, pnl, positions, signals }: OverviewProps) {
+  const gradId = useId()
   const totalPnl = pnl.total_pnl
   const pnlColor = totalPnl >= 0 ? 'var(--green)' : 'var(--red)'
   const pnlSign = totalPnl >= 0 ? '+' : ''
@@ -115,19 +117,19 @@ export function Overview({ status, pnl, positions, signals }: OverviewProps) {
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={chartData}>
                 <defs>
-                  <linearGradient id="eq-grad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%"  stopColor="#6366F1" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="t"
-                  tick={{ fill: '#475569', fontSize: 10 }}
+                  tick={{ fill: 'var(--text-3)', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#475569', fontSize: 10 }}
+                  tick={{ fill: 'var(--text-3)', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v: unknown) => `$${Number(v).toFixed(0)}`}
@@ -148,7 +150,7 @@ export function Overview({ status, pnl, positions, signals }: OverviewProps) {
                   dataKey="v"
                   stroke="#6366F1"
                   strokeWidth={2}
-                  fill="url(#eq-grad)"
+                  fill={`url(#${gradId})`}
                 />
               </AreaChart>
             </ResponsiveContainer>
