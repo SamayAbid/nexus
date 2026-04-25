@@ -23,12 +23,13 @@ const EMPTY_PNL: PnLData = {
 }
 
 export default function Dashboard() {
-  const [tab, setTab] = useState<Tab>('overview')
+  const VALID_TABS = new Set<Tab>(['overview','signals','positions','trades','risk','control'])
 
-  useEffect(() => {
-    const saved = localStorage.getItem('nexus-tab') as Tab | null
-    if (saved) setTab(saved)
-  }, [])
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window === 'undefined') return 'overview'
+    const saved = localStorage.getItem('nexus-tab')
+    return (VALID_TABS.has(saved as Tab) ? saved : 'overview') as Tab
+  })
 
   function handleTabChange(t: Tab) {
     setTab(t)
@@ -48,6 +49,7 @@ export default function Dashboard() {
 
   const wsEvent = useWebSocket()
   const [wsSignals, setWsSignals] = useState<SignalItem[]>([])
+  // TODO(Task 5): pass newTrade to Trades view to flash new rows
   const [newTrade, setNewTrade] = useState<Trade | null>(null)
 
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function Dashboard() {
           {tab === 'positions' && <Positions positions={positions} />}
           {tab === 'trades'    && <Trades trades={trades} />}
           {tab === 'risk'      && <Risk status={status} pnl={pnl} />}
+          {/* TODO(Task 6): onChanged should trigger a status refetch after pause/resume */}
           {tab === 'control'   && <Control status={status} onChanged={() => {}} />}
         </main>
       </div>
