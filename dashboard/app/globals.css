@@ -17,12 +17,13 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
+html { height: 100%; }
+body { height: 100%; overflow: hidden; /* viewport-locked dashboard — no page scroll */ }
 
 body {
   background: var(--bg);
   color: var(--text-1);
-  font-family: var(--font-sans), 'Space Grotesk', sans-serif;
+  font-family: var(--font-sans), sans-serif;
 }
 
 ::-webkit-scrollbar { width: 4px; }
