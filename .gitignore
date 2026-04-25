@@ -1,4 +1,5 @@
 data/nexus.db
+data/control.json
 .env
 .env.local
 __pycache__/
